@@ -1,6 +1,6 @@
 using System;
 
-namespace WorkoutTrackerApi.Infrastructure;
+namespace WorkoutTrackerApi.Application;
 
 public class ForbiddenException : Exception {
     public ForbiddenException(string message) : base(message) {

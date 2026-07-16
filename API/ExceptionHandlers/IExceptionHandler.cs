@@ -1,8 +1,9 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Diagnostics;
+using WorkoutTrackerApi.Application;
 
-namespace WorkoutTrackerApi.Infrastructure;
+namespace WorkoutTrackerApi.Controllers;
 
 public class NotFoundExceptionHandler : IExceptionHandler {
     public async ValueTask<bool> TryHandleAsync(HttpContext context, Exception exception, CancellationToken cancellationToken) {
