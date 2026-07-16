@@ -61,7 +61,7 @@ public class UserController : ControllerBase {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
         if (string.IsNullOrEmpty(userId))
-            throw new Exception("User ID claim missing");
+            return Unauthorized("User ID claim is missing");
 
         var valueOfRefreshToken = Request.Cookies["RefreshToken"];
 
@@ -97,7 +97,7 @@ public class UserController : ControllerBase {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
         if (string.IsNullOrEmpty(userId))
-            throw new Exception("User ID claim missing");
+            return Unauthorized("User ID claim is missing");
 
         var valueOfRefreshToken = Request.Cookies["RefreshToken"];
 

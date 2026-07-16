@@ -23,7 +23,7 @@ public class ExerciseController : ControllerBase {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
         if (string.IsNullOrEmpty(userId))
-            throw new Exception("User ID claim missing");
+            return Unauthorized("User ID claim is missing");
 
         var result = await _exerciseService.GetOneExercise(exerciseId, cancellationToken);
 
@@ -41,7 +41,7 @@ public class ExerciseController : ControllerBase {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
         if (string.IsNullOrEmpty(userId))
-            throw new Exception("User ID claim missing");
+            return Unauthorized("User ID claim is missing");
 
         var result = await _exerciseService.GetAllExercises(typeName, exerciseName, page, limit, cancellationToken);
 

@@ -23,7 +23,7 @@ public class PlanController : ControllerBase {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
         if (string.IsNullOrEmpty(userId))
-            throw new Exception("User ID claim missing");
+            return Unauthorized("User ID claim is missing");
 
         var result = await _planService.GetOnePlan(planId, int.Parse(userId), cancellationToken);
         return Ok(result);
@@ -34,7 +34,7 @@ public class PlanController : ControllerBase {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
         if (string.IsNullOrEmpty(userId))
-            throw new Exception("User ID claim missing");
+            return Unauthorized("User ID claim is missing");
 
         var result = await _planService.GetOneUsersAllPlans(int.Parse(userId), cancellationToken);
         return Ok(result);
@@ -45,7 +45,7 @@ public class PlanController : ControllerBase {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
         if (string.IsNullOrEmpty(userId))
-            throw new Exception("User ID claim missing");
+            return Unauthorized("User ID claim is missing");
 
         var result = await _planService.CreatePlan(dto, int.Parse(userId), cancellationToken);
         return Created(string.Empty, result);
@@ -56,7 +56,7 @@ public class PlanController : ControllerBase {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
         if (string.IsNullOrEmpty(userId))
-            throw new Exception("User ID claim missing");
+            return Unauthorized("User ID claim is missing");
 
         var result = await _planService.UpdatePlan(dto, int.Parse(userId), planId, cancellationToken);
         return Ok(result);
@@ -67,7 +67,7 @@ public class PlanController : ControllerBase {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
         if (string.IsNullOrEmpty(userId))
-            throw new Exception("User ID claim missing");
+            return Unauthorized("User ID claim is missing");
 
         if (await _planService.DeletePlan(planId, int.Parse(userId), cancellationToken))
             return NoContent();
@@ -80,7 +80,7 @@ public class PlanController : ControllerBase {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
         if (string.IsNullOrEmpty(userId))
-            throw new Exception("User ID claim missing");
+            return Unauthorized("User ID claim is missing");
 
         if (await _planService.SchedulePlan(planId, int.Parse(userId), dateTime, cancellationToken))
             return NoContent();
@@ -93,7 +93,7 @@ public class PlanController : ControllerBase {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
         if (string.IsNullOrEmpty(userId))
-            throw new Exception("User ID claim missing");
+            return Unauthorized("User ID claim is missing");
 
         if (await _planService.ChangePlanState(planId, int.Parse(userId), planState, cancellationToken))
             return NoContent();
@@ -106,7 +106,7 @@ public class PlanController : ControllerBase {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
         if (string.IsNullOrEmpty(userId))
-            throw new Exception("User ID claim missing");
+            return Unauthorized("User ID claim is missing");
 
         var result = await _planService.GetPlansByState(int.Parse(userId), planState, cancellationToken);
 
@@ -118,7 +118,7 @@ public class PlanController : ControllerBase {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
         if (string.IsNullOrEmpty(userId))
-            throw new Exception("User ID claim missing");
+            return Unauthorized("User ID claim is missing");
 
         var result = await _planService.GetPlansByDateRange(int.Parse(userId), startDate, endDate, cancellationToken);
 
@@ -130,7 +130,7 @@ public class PlanController : ControllerBase {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
         if (string.IsNullOrEmpty(userId))
-            throw new Exception("User ID claim missing");
+            return Unauthorized("User ID claim is missing");
 
         return Ok(await _planService.GetUserPlanReport(int.Parse(userId), cancellationToken));
     }

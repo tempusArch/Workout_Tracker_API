@@ -18,26 +18,62 @@ public class PlanService {
     public async Task<PlanResponse> GetOnePlan(int planId, int userId, CancellationToken cancellationToken) {
         var theOne = await _context.PlanTable
             .AsNoTracking()
-            .Include(p => p.ExerciseRisuto)
-            .FirstOrDefaultAsync(p => p.Id == planId && p.UserId == userId, cancellationToken);
+            .Where(x => x.Id == planId && x.UserId == userId)
+            .Select(x => new PlanResponse {
+                Name = x.Name,
+                Description = x.Description,
+
+                StartTime = x.StartTime,
+                Duration = x.Duration,
+                PlanState = x.PlanState,
+
+                ExerciseRisuto = x.ExerciseRisuto
+                    .Select(e => new ExerciseResponse {
+                        Name = e.Name,
+                        Type = e.Type,
+                        Description = e.Description,
+
+                        Sets = e.Sets,
+                        Repetitions = e.Repetitions,
+                        Weight = e.Weight
+                    })
+                    .ToList()
+            })
+            .FirstOrDefaultAsync(cancellationToken);
 
         if (theOne == null)
             throw new NotFoundException("Plan not found");
 
-        return _mapper.Map<PlanResponse>(theOne);
+        return theOne;
     }
 
     public async Task<IEnumerable<PlanResponse>> GetOneUsersAllPlans(int userId, CancellationToken cancellationToken) {
         var result = await _context.PlanTable
             .AsNoTracking()
-            .Include(x => x.ExerciseRisuto)
             .Where(x => x.UserId == userId)
+            .Select(x => new PlanResponse {
+                Name = x.Name,
+                Description = x.Description,
+
+                StartTime = x.StartTime,
+                Duration = x.Duration,
+                PlanState = x.PlanState,
+
+                ExerciseRisuto = x.ExerciseRisuto
+                    .Select(e => new ExerciseResponse {
+                        Name = e.Name,
+                        Type = e.Type,
+                        Description = e.Description,
+
+                        Sets = e.Sets,
+                        Repetitions = e.Repetitions,
+                        Weight = e.Weight
+                    })
+                    .ToList()
+            })
             .ToListAsync(cancellationToken);
 
-        if (result.Count() == 0)
-            throw new NotFoundException("No plan found");
-
-        return _mapper.Map<IEnumerable<PlanResponse>>(result);    
+        return result;    
     }
     
     public async Task<PlanResponse> CreatePlan(CreatePlanDto dto, int userId, CancellationToken cancellationToken) {
@@ -45,7 +81,7 @@ public class PlanService {
             .Where(e => dto.ExerciseIdRisuto.Contains(e.Id))
             .ToListAsync(cancellationToken);
 
-        if (exerciseRisuto.Count() == 0)
+        if (!exerciseRisuto.Any())
             throw new NotFoundException("Exercise not found");
 
         var newPlan = _mapper.Map<Plan>(dto);
@@ -70,7 +106,7 @@ public class PlanService {
             .Where(e => dto.ExerciseIdRisuto.Contains(e.Id))
             .ToListAsync(cancellationToken);
 
-        if (exerciseRisuto.Count() == 0)
+        if (!exerciseRisuto.Any())
             throw new NotFoundException("Exercise not found");
 
         theOne.ExerciseRisuto.Clear();
@@ -124,21 +160,36 @@ public class PlanService {
     public async Task<IEnumerable<PlanResponse>> GetPlansByState(int userId, PlanState planState,CancellationToken cancellationToken) {
         var result = await _context.PlanTable
             .AsNoTracking()
-            .Include(x => x.ExerciseRisuto)
             .Where(x => x.UserId == userId && x.PlanState == planState)
             .OrderByDescending(x => x.StartTime)
+            .Select(x => new PlanResponse {
+                Name = x.Name,
+                Description = x.Description,
+
+                StartTime = x.StartTime,
+                Duration = x.Duration,
+                PlanState = x.PlanState,
+
+                ExerciseRisuto = x.ExerciseRisuto
+                    .Select(e => new ExerciseResponse {
+                        Name = e.Name,
+                        Type = e.Type,
+                        Description = e.Description,
+
+                        Sets = e.Sets,
+                        Repetitions = e.Repetitions,
+                        Weight = e.Weight
+                    })
+                    .ToList()
+            })
             .ToListAsync(cancellationToken);
 
-        if (result.Count() == 0)
-            throw new NotFoundException("No plan found");
-
-        return _mapper.Map<IEnumerable<PlanResponse>>(result);    
+        return result;    
     }
 
     public async Task<IEnumerable<PlanResponse>> GetPlansByDateRange(int userId, DateTime? startDate, DateTime? endDate, CancellationToken cancellationToken) {
         IQueryable<Plan> source = _context.PlanTable
             .AsNoTracking()
-            .Include(x => x.ExerciseRisuto)
             .Where(x => x.UserId == userId);
 
         if (startDate.HasValue)
@@ -147,18 +198,43 @@ public class PlanService {
         if (endDate.HasValue)
             source = source.Where(x => x.StartTime <= endDate);
 
-        if (source.Count() == 0)
-            throw new NotFoundException("No plan found");
+        var result = await source
+            .Select(x => new PlanResponse {
+                Name = x.Name,
+                Description = x.Description,
 
-        var result = await source.ToListAsync(cancellationToken);
+                StartTime = x.StartTime,
+                Duration = x.Duration,
+                PlanState = x.PlanState,
+
+                ExerciseRisuto = x.ExerciseRisuto
+                    .Select(e => new ExerciseResponse {
+                        Name = e.Name,
+                        Type = e.Type,
+                        Description = e.Description,
+
+                        Sets = e.Sets,
+                        Repetitions = e.Repetitions,
+                        Weight = e.Weight
+                    })
+                    .ToList()
+            })
+            .ToListAsync(cancellationToken);
     
 
-        return _mapper.Map<IEnumerable<PlanResponse>>(result);    
+        return result;    
     }
 
     public async Task<ReportResonse> GetUserPlanReport(int userId, CancellationToken cancellationToken) {
-        int totalCount = await _context.PlanTable.CountAsync(p => p.UserId == userId, cancellationToken);       
-        int completedCount = await _context.PlanTable.CountAsync(p => p.UserId == userId && p.PlanState == PlanState.Completed, cancellationToken);
+        int totalCount = await _context.PlanTable
+            .CountAsync(p => p.UserId == userId, cancellationToken);
+               
+        int completedCount = await _context.PlanTable
+            .CountAsync(p => 
+                p.UserId == userId && 
+                p.PlanState == PlanState.Completed, 
+                cancellationToken
+            );
 
         return new ReportResonse {
             TotalPlans = totalCount,

@@ -17,12 +17,22 @@ public class ExerciseService {
     public async Task<ExerciseResponse> GetOneExercise(int exerciseId, CancellationToken cancellationToken) {
         var theOne = await _context.ExerciseTable
             .AsNoTracking()
-            .FirstOrDefaultAsync(e => e.Id == exerciseId, cancellationToken);   
+            .Where(e => e.Id == exerciseId)
+            .Select(e => new ExerciseResponse {
+                Name = e.Name,
+                Type = e.Type,
+                Description = e.Description,
+
+                Sets = e.Sets,
+                Repetitions = e.Repetitions,
+                Weight = e.Weight
+            })
+            .FirstOrDefaultAsync(cancellationToken);
 
         if (theOne == null)  
             throw new NotFoundException("Exercise not found");
 
-        return _mapper.Map<ExerciseResponse>(theOne);
+        return theOne;
     }
 
     public async Task<ExerciseListResponse> GetAllExercises(string? typeName, string? exerciseName, int page, int limit, CancellationToken cancellationToken) {
@@ -38,21 +48,27 @@ public class ExerciseService {
             source = nameFiltered.Union(descriptionFiltered);
         }
 
-        if (source == null)
-            throw new NotFoundException("No exercise found");
+        var result = source
+            .Select(e => new ExerciseResponse {
+                Name = e.Name,
+                Type = e.Type,
+                Description = e.Description,
 
-        if (limit > 100) 
-            limit = 100;
+                Sets = e.Sets,
+                Repetitions = e.Repetitions,
+                Weight = e.Weight
+            });
+
+        limit = Math.Min(limit, 100);
             
-        var arranged = await source
-            .OrderBy(p => p.Id)
+        var arranged = await result
+            .OrderBy(p => p.Type)
+            .ThenBy(p => p.Name)
             .Skip((page - 1) * limit)
             .Take(limit)
             .ToListAsync(cancellationToken);
 
-        var result = _mapper.Map<IEnumerable<ExerciseResponse>>(arranged);
-
-        return new ExerciseListResponse {Items = result};
+        return new ExerciseListResponse {Items = arranged};
     }
 
 }
