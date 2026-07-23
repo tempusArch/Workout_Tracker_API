@@ -48,7 +48,9 @@ public class ExerciseService {
             source = nameFiltered.Union(descriptionFiltered);
         }
 
-        var result = source
+        limit = Math.Min(limit, 100);
+
+        var result = await source
             .Select(e => new ExerciseResponse {
                 Name = e.Name,
                 Type = e.Type,
@@ -57,18 +59,14 @@ public class ExerciseService {
                 Sets = e.Sets,
                 Repetitions = e.Repetitions,
                 Weight = e.Weight
-            });
-
-        limit = Math.Min(limit, 100);
-            
-        var arranged = await result
+            })
             .OrderBy(p => p.Type)
             .ThenBy(p => p.Name)
             .Skip((page - 1) * limit)
             .Take(limit)
             .ToListAsync(cancellationToken);
 
-        return new ExerciseListResponse {Items = arranged};
+        return new ExerciseListResponse {Items = result};
     }
 
 }
